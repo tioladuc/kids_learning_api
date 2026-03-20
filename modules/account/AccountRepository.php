@@ -76,6 +76,7 @@ class AccountRepository
                 c.login,
                 c.parent_responsible,
                 c.parent_id,
+                c.passwordraw,
                 p.first_name AS parent_first_name,
                 p.last_name AS parent_last_name,
                 p.email AS parent_email
@@ -105,6 +106,7 @@ class AccountRepository
                 id,
                 name,
                 login,
+                passwordraw,
                 parent_responsible
             FROM learn4kids_children
             WHERE parent_id = :parent_id"
@@ -153,8 +155,8 @@ class AccountRepository
     public function addChild(array $data): bool
     {
         $sql = "INSERT INTO learn4kids_children
-                (id, parent_id, name, login, password, parent_responsible)
-                VALUES (:id, :parent_id, :name, :login, :password, :parent_responsible)";
+                (id, parent_id, name, login, password, passwordraw, parent_responsible)
+                VALUES (:id, :parent_id, :name, :login, :password, :passwordraw, :parent_responsible)";
 
         $stmt = $this->db->prepare($sql);
 

@@ -47,7 +47,7 @@ class AudioRepository
         $stmt = $this->db->prepare(
             "SELECT * FROM learn4kids_audios WHERE id = :id LIMIT 1"
         );
-
+	//echo "SELECT * FROM learn4kids_audios WHERE id = ". $id ." LIMIT 1";
         $stmt->execute(['id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }

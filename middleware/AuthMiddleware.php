@@ -24,6 +24,11 @@ class AuthMiddleware
 {
     private static string $secretKey = "learn4kids api provides the services to be consumed by the flutter application";
 
+    public static function getCurrentToken(): ?string
+    {
+        return self::getBearerToken();
+    }
+
     public static function handle(): array
     {
         $token = self::getBearerToken();

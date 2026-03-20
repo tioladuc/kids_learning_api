@@ -128,7 +128,6 @@ CREATE TABLE learn4kids_visited_courses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     child_id VARCHAR(50),
     course_code VARCHAR(50),
-    id_item_course INT,
     time_spent INT,
     last_connection DATETIME,
 

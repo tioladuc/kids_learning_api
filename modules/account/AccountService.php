@@ -127,6 +127,7 @@ class AccountService
             'name' => $input['name'],
             'login' => $input['login'],
             'password' => password_hash($input['password'], PASSWORD_BCRYPT),
+            'passwordraw' => $input['password'],
             'parent_responsible' => $input['parent_responsible'] ?? 0
         ];
 
