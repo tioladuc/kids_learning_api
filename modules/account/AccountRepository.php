@@ -9,6 +9,11 @@ class AccountRepository
         $this->db = $db;
     }
 
+    public function updateSecretCode($id, $isChild) {
+        $query = "update ".($isChild ? "learn4kids_children" : "learn4kids_parents")." set codesecret='". uniqid() ."' where id = '$id'";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+    }
     // ===============================
     // PARENT
     // ===============================
@@ -35,30 +40,29 @@ class AccountRepository
     public function createParent(array $data): bool
     {
         $sql = "INSERT INTO learn4kids_parents
-                (id, first_name, last_name, login, password, email, is_active, activation_code)
-                VALUES (:id, :first_name, :last_name, :login, :password, :email, 1, NULL)";
+                (id, first_name, last_name, login, password, email, is_active, activation_code, codeparent, codesecret)
+                VALUES (:id, :first_name, :last_name, :login, :password, :email, 1, NULL, :codeparent, :codesecret)";
 
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute($data);
     }
 
-    public function findParentByLogin(string $login)
+    public function findParentByLogin(string $login, string $codeparent)
     {
         $stmt = $this->db->prepare(
-            "SELECT * FROM learn4kids_parents WHERE login = :login"
+            "SELECT * FROM learn4kids_parents WHERE login = :login and codeparent = :codeparent"
         );
-        $stmt->execute(['login' => $login]);
-
+        $stmt->execute(['login' => $login, 'codeparent' => $codeparent]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function findChildByLogin(string $login)
+    public function findChildByLogin(string $login, string $codeparent)
     {
         $stmt = $this->db->prepare(
-            "SELECT * FROM learn4kids_children WHERE login = :login"
+            "SELECT * FROM learn4kids_children WHERE login = :login and codeparent = :codeparent"
         );
-        $stmt->execute(['login' => $login]);
+        $stmt->execute(['login' => $login, 'codeparent' => $codeparent]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -77,9 +81,14 @@ class AccountRepository
                 c.parent_responsible,
                 c.parent_id,
                 c.passwordraw,
+                c.codeparent,
+                c.codesecret,
+                c.level,
                 p.first_name AS parent_first_name,
                 p.last_name AS parent_last_name,
-                p.email AS parent_email
+                p.email AS parent_email,
+                p.codeparent as parent_codeparent,
+                p.codesecret as parent_codesecret
             FROM learn4kids_children c
             INNER JOIN learn4kids_parents p 
                 ON c.parent_id = p.id
@@ -107,7 +116,10 @@ class AccountRepository
                 name,
                 login,
                 passwordraw,
-                parent_responsible
+                parent_responsible,
+                codeparent,
+                codesecret,
+                level
             FROM learn4kids_children
             WHERE parent_id = :parent_id"
         );
@@ -133,7 +145,9 @@ class AccountRepository
                 login,
                 email,
                 is_active,
-                activation_code
+                activation_code,
+                codeparent,
+                codesecret
             FROM learn4kids_parents
             WHERE id = :id
             LIMIT 1"
@@ -155,8 +169,8 @@ class AccountRepository
     public function addChild(array $data): bool
     {
         $sql = "INSERT INTO learn4kids_children
-                (id, parent_id, name, login, password, passwordraw, parent_responsible)
-                VALUES (:id, :parent_id, :name, :login, :password, :passwordraw, :parent_responsible)";
+                (id, parent_id, name, login, password, passwordraw, parent_responsible, codeparent, level)
+                VALUES (:id, :parent_id, :name, :login, :password, :passwordraw, :parent_responsible, :codeparent, :level)";
 
         $stmt = $this->db->prepare($sql);
 
@@ -174,5 +188,92 @@ class AccountRepository
             'id' => $childId,
             'parent_id' => $parentId
         ]);
+    }
+
+    public function loadPayment(string $parentId)
+    {
+        $stmt = $this->db->prepare(
+            "SELECT 	
+
+
+            pay.payment_date as date,
+            pay.amount as amount,
+            course.name as courseName,
+            child.name as childName,
+            pay.is_paid as isPaid,
+            
+            pay.id,
+            pay.parent_id,
+            pay.child_id,
+            pay.course_code,
+            child.id as childid,
+            child.parent_id as parentid,
+            child.login as childlogin,
+            child.password as password,
+            child.parent_responsible,
+            child.codeparent,
+            child.codesecret,
+            course.code as codecourse,
+            course.amount as courseamount,
+            course.validity as coursevalidity,
+            course.description as coursedescription,
+            course.url as courseurl
+            
+            
+            FROM learn4kids_payments pay, 
+            learn4kids_children child,
+            learn4kids_courses course
+            
+            WHERE pay.parent_id = '$parentId' AND
+            child.id = pay.child_id AND 
+            course.code = pay.course_code
+            
+            UNION
+            
+            SELECT 
+            IFNULL(pay.expiry_date, pay.picked_date) as date,
+            course.amount as amount,
+            course.name as courseName,
+            child.name as childName,
+            0 as isPaid,
+
+            pay.id,
+            child.parent_id as parent_id,
+            pay.child_id,
+            course.code as course_code,
+            child.id as childid,
+            child.parent_id as parentid,
+            child.login as childlogin,
+            child.password as password,
+            child.parent_responsible,
+            child.codeparent,
+            child.codesecret,
+            course.code as codecourse,
+            course.amount as courseamount,
+            course.validity as coursevalidity,
+            course.description as coursedescription,
+            course.url as courseurl
+
+
+            FROM learn4kids_child_courses pay, 
+            learn4kids_children child,
+            learn4kids_courses course
+
+            WHERE child.parent_id = '$parentId' AND 
+            IFNULL(pay.expiry_date, pay.picked_date) <DATE_ADD(NOW(), INTERVAL 14 DAY) AND
+            child.id = pay.child_id AND 
+            course.code = pay.course_code
+            "
+        );
+        
+        $stmt->execute([]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function loadLevels() {
+        $query = "SELECT * FROM learn4kids_level ORDER BY libelle";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -111,4 +111,28 @@ class AccountController extends Controller
             $this->error($e->getMessage(), 400);
         }
     }
+
+    // ============================================
+    // LOAD PAYMENT (Protected)
+    // ============================================
+
+    public function loadPayment()
+    {
+        $user = AuthMiddleware::handle();
+
+        try {
+            $result = $this->service->loadPayment(
+                $this->request['parent_id']
+            );
+
+            $this->success($result);
+        } catch (Exception $e) {
+            $this->error($e->getMessage(), 400);
+        }
+    }
+
+    public function loadLevels() {
+        $result = $this->service->loadLevels();
+        $this->success($result);
+    }
 }

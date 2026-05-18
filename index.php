@@ -30,7 +30,9 @@ $router->post('/account/logout', 'AccountController@logout');
 $router->post('/account/addChild', 'AccountController@addChild');
 $router->post('/account/deleteChild', 'AccountController@deleteChild');
 $router->post('/createParent', 'AccountController@createParent');
-$router->post('/account/parentLoadChildren', 'AccountController@parentLoadChildren');
+$router->post('/account/parentLoadChildren', 'AccountController@parentLoadChildren');//learn4kids_level
+$router->post('/account/loadPayment', 'AccountController@loadPayment');
+$router->post('/account/levels', 'AccountController@loadLevels');
 
 // COURSE
 $router->post('/course/loadChildPendingCourses', 'CourseController@loadChildPendingCourses');

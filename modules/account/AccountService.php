@@ -37,7 +37,9 @@ class AccountService
             'last_name' => $input['last_name'],
             'login' => $input['login'],
             'password' => password_hash($input['password'], PASSWORD_BCRYPT),
-            'email' => $input['email']
+            'email' => $input['email'],
+            'codeparent' => $input['codeparent'],
+            'codesecret' => ''
         ];
 
         $this->repo->createParent($data);
@@ -58,7 +60,7 @@ class AccountService
 
     private function loginAsParent(array $input): array
     {        
-        $parent = $this->repo->findParentByLogin($input['login']);
+        $parent = $this->repo->findParentByLogin($input['login'], $input['codeparent']);
 
         if (!$parent) {
             throw new Exception("Invalid credentials");
@@ -68,7 +70,7 @@ class AccountService
             throw new Exception("Invalid credentials");
         }
 
-        
+        $this->repo->updateSecretCode($parent['id'], false);
         $token = $this->generateToken($parent['id']);
         
         return [
@@ -81,7 +83,7 @@ class AccountService
     }
     private function loginAsChild(array $input): array
     {
-        $child = $this->repo->findChildByLogin($input['login']);
+        $child = $this->repo->findChildByLogin($input['login'], $input['codeparent']);
 
         if (!$child) {
             throw new Exception("Invalid credentials");
@@ -91,7 +93,7 @@ class AccountService
             throw new Exception("Invalid credentials");
         }
 
-        
+        $this->repo->updateSecretCode($child['id'], true);
         $token = $this->generateToken($child['id']);
         
         return [
@@ -121,20 +123,24 @@ class AccountService
 
     public function addChild(array $input, string $parentId): array
     {
+        $idChild = uniqid("child_");
         $data = [
-            'id' => uniqid("child_"),
+            'id' => $idChild,
             'parent_id' => $parentId,
             'name' => $input['name'],
             'login' => $input['login'],
             'password' => password_hash($input['password'], PASSWORD_BCRYPT),
             'passwordraw' => $input['password'],
-            'parent_responsible' => $input['parent_responsible'] ?? 0
+            'parent_responsible' => $input['parent_responsible'] ?? 0,
+            'codeparent' => $input['codeparent'],
+            'level' => $input['level'],
         ];
 
         $this->repo->addChild($data);
 
         return [
-            "message" => "Child added successfully"
+            "message" => "Child added successfully",
+            "id" => $idChild,
         ];
     }
 
@@ -149,5 +155,19 @@ class AccountService
         return [
             "message" => "Child deleted successfully"
         ];
+    }
+
+    // ============================================
+    // LOAD PAYMENT (Protected)
+    // ============================================
+
+    public function loadPayment(string $parentId): array
+    {
+        return $this->repo->loadPayment($parentId);
+    }
+    
+    public function loadLevels(): array
+    {
+        return $this->repo->loadLevels();
     }
 }

@@ -138,13 +138,13 @@ class CourseRepository
                 'course_code' => $courseCode,
                 'amount' => $amount
             ]);
-            print_r([
+            /*print_r([
                 'parent_id' => $parentId,
                 'child_id' => $childId,
                 'course_code' => $courseCode,
                 'amount' => $amount
-            ]);
-            //$this->db->commit();
+            ]);*/
+            $this->db->commit();
             return true;
 
         } catch (Exception $e) {
