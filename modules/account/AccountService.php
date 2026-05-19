@@ -117,6 +117,25 @@ class AccountService
         return JWT::encode($payload, $this->secretKey, 'HS256');
     }
 
+
+    public function changePasswordParentChild($input) {
+        $data = [
+            'name' => $input['name'],
+            'password' => $input['new_password'],
+            'passwordraw' => $input['new_password'],
+            'child_id' => $input['child_id'],
+            'parent_id' => $input['parent_id'],
+            'level' => $input['level'] ?? 0,
+            'login' => $input['login'],
+            'codeparent' => $input['codeparent'],
+        ];
+
+        $this->repo->changePasswordParentChild($data);
+
+        return [
+            "message" => "Child update successfully",
+        ];
+    }
     // ============================================
     // ADD CHILD
     // ============================================

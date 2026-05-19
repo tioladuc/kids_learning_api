@@ -165,7 +165,16 @@ class AccountRepository
     // ===============================
     // CHILD
     // ===============================
+    public function changePasswordParentChild($data) {
+        $sql = "UPDATE learn4kids_children SET 
+                        name = :name, password = :password, 
+                        passwordraw = :passwordraw, 
+                        level = :level, login= :login 
+                        WHERE id = :child_id";
+        $stmt = $this->db->prepare($sql);
 
+        return $stmt->execute($data);
+    }
     public function addChild(array $data): bool
     {
         $sql = "INSERT INTO learn4kids_children

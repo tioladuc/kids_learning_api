@@ -73,9 +73,21 @@ class AccountController extends Controller
     }
 
     // ============================================
+    // UPDATE CHILD (Protected)
+    // ============================================
+    public function changePasswordParentChild() {
+        try {
+            $result = $this->service->changePasswordParentChild($this->request);
+
+            $this->success($result);
+        } catch (Exception $e) {
+            $this->error($e->getMessage(), 400);
+        }
+    }
+
+    // ============================================
     // ADD CHILD (Protected)
     // ============================================
-
     public function addChild()
     {
         $user = AuthMiddleware::handle();

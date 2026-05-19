@@ -33,6 +33,7 @@ $router->post('/createParent', 'AccountController@createParent');
 $router->post('/account/parentLoadChildren', 'AccountController@parentLoadChildren');//learn4kids_level
 $router->post('/account/loadPayment', 'AccountController@loadPayment');
 $router->post('/account/levels', 'AccountController@loadLevels');
+$router->post('/account/levels', 'AccountController@changePasswordParentChild');
 
 // COURSE
 $router->post('/course/loadChildPendingCourses', 'CourseController@loadChildPendingCourses');
