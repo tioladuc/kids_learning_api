@@ -152,4 +152,40 @@ class CourseRepository
             throw $e;
         }
     }
+
+    public function urlCourseEntering(string $childId, string $courseCode): array
+    {
+        $query = "INSERT INTO learn4kids_visited_courses(child_id, course_code, time_spent, last_connection) VALUES('$childId', '$courseCode', 0, now())";
+    	$stmt = $this->db->prepare($query);
+
+        return $stmt->execute([]);
+    }
+
+    public function urlCourseLeaving(string $childId, string $courseCode): array
+    {
+        $query = "SELECT * FROM learn4kids_visited_courses 
+                    WHERE child_id = '$childId' AND course_code = '$courseCode' AND time_spent = 0";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([]);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+
+        // 1. Create a DateTime object from your MySQL string
+        $bingoDate = new DateTime($data['last_connection']);
+
+        // 2. Create a DateTime object for the current time
+        $now = new DateTime();
+
+        // 3. Calculate the difference (DateInterval)
+        $interval = $bingoDate->diff($now);
+
+        // 4. Calculate total minutes
+        // Convert days and hours to minutes, then add the remaining minutes
+        $totalMinutes = ($interval->days * 24 * 60) + ($interval->h * 60) + $interval->i;
+        if($totalMinutes > 500) $totalMinutes = 0;
+        $query = "UPDATE learn4kids_visited_courses SET time_spent = $totalMinutes, last_connection = now() 
+                    WHERE child_id = '$childId' AND course_code = '$courseCode' AND time_spent = 0";
+
+        $stmt = $this->db->prepare($query);
+        return $stmt->execute([]);
+    }
 }

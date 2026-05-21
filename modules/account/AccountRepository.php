@@ -281,8 +281,59 @@ class AccountRepository
 
     public function loadLevels() {
         $query = "SELECT * FROM learn4kids_level ORDER BY libelle";
+        
         $stmt = $this->db->prepare($query);
         $stmt->execute([]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function sendActivationCodeParent($email): array
+    {
+        $queryGetParent = "SELECT * FROM learn4kids_parents WHERE email like '$email'";
+        $stmt = $this->db->prepare($queryGetParent);
+        $stmt->execute([]);
+        $parent = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+
+        $code = random_int(100000, 999999);
+        $sql = "UPDATE SET activation_code = '$code', is_active=1 where email like '$email'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([]);
+
+        $to = $GLOBALS['USER']['code']; //"tioladuc@gmail.com";
+        $subject = "Verification Code - " . $this->getApplicationName() ;
+        $message = "Your verification code is: " . $code;
+        $message = "Your parent's code is: " . $parent['parentcode'];
+        $message = "Your login  is: " . $parent['login'];
+
+        $headers = "From: ". $this->getSenderEmail() ."\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+        if(mail($to, $subject, $message, $headers)){
+            //echo "Email sent";
+        }else{
+            //echo "Email failed";
+        }
+
+        return true;
+    }
+
+    public function resetParentPassword($input): array
+    {
+        $email = $input['email'];
+        $code = $input['code'];
+        $password = password_hash($input['new_password'], PASSWORD_BCRYPT);
+        $sql = "UPDATE SET activation_code = null, password = '$password', is_active=1 where email like '$email' AND activation_code = '$code'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([]);
+    }
+
+    ////////////////////////////////////////////////////////
+    ////////////////CONFIGURATION/////////////////////
+    ////////////////////////////////////////////////////////
+    public function getApplicationName() {
+        return 'Learn4Kids';
+    }
+    public function getSenderEmail() {
+        return 'bym-quiz@yehoshoualevivant.com';
     }
 }

@@ -147,4 +147,26 @@ class AccountController extends Controller
         $result = $this->service->loadLevels();
         $this->success($result);
     }
+
+    public function sendActivationCodeParent() {
+        $email = $input['email'];
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->error($e->getMessage(), 400);
+            return;
+        }
+
+        $result = $this->service->sendActivationCodeParent($email);
+        $this->success($result);
+    }
+
+    public function resetParentPassword() {
+        $email = $input['email'];
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->error($e->getMessage(), 400);
+            return;
+        }
+        
+        $result = $this->service->resetParentPassword($this->request);
+        $this->success($result);
+    }
 }

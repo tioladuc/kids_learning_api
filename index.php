@@ -33,7 +33,10 @@ $router->post('/createParent', 'AccountController@createParent');
 $router->post('/account/parentLoadChildren', 'AccountController@parentLoadChildren');//learn4kids_level
 $router->post('/account/loadPayment', 'AccountController@loadPayment');
 $router->post('/account/levels', 'AccountController@loadLevels');
-$router->post('/account/levels', 'AccountController@changePasswordParentChild');
+$router->post('/account/changePasswordParentChild', 'AccountController@changePasswordParentChild');
+
+$router->post('/account/sendActivationCodeParent', 'AccountController@sendActivationCodeParent');
+$router->post('/account/resetParentPassword', 'AccountController@resetParentPassword');
 
 // COURSE
 $router->post('/course/loadChildPendingCourses', 'CourseController@loadChildPendingCourses');
@@ -42,6 +45,9 @@ $router->post('/course/loadChildAvailableCourses', 'CourseController@loadAvailab
 $router->post('/course/pickCourse', 'CourseController@pickCourse');
 $router->post('/course/payCourse', 'CourseController@payCourse'); //redo the pay part according to periodicity
 $router->post('/course/removeCourse', 'CourseController@removeCourse');
+
+$router->post('/course/urlCourseEntering', 'CourseController@urlCourseEntering');
+$router->post('/course/urlCourseLeaving', 'CourseController@urlCourseLeaving');
 
 // AUDIO
 $router->post('/audio/addAudio', 'AudioController@addAudio');

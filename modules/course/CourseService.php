@@ -41,4 +41,16 @@ class CourseService
         $this->repo->payCourse($childId, $courseCode, $amount, $parentId);
         return ["message" => "Course paid successfully"];
     }
+
+    public function urlCourseEntering(string $childId, string $courseCode): array
+    {
+    	$this->repo->urlCourseEntering($childId, $courseCode);
+        return ["message" => "Course statistics entering url course"];
+    }
+
+    public function urlCourseLeaving(string $childId, string $courseCode): array
+    {
+    	$this->repo->urlCourseLeaving($childId, $courseCode);
+        return ["message" => "Course statistics leaving url course"];
+    }
 }
