@@ -153,7 +153,7 @@ class CourseRepository
         }
     }
 
-    public function urlCourseEntering(string $childId, string $courseCode): array
+    public function urlCourseEntering(string $childId, string $courseCode): bool
     {
         $query = "INSERT INTO learn4kids_visited_courses(child_id, course_code, time_spent, last_connection) VALUES('$childId', '$courseCode', 0, now())";
     	$stmt = $this->db->prepare($query);
@@ -161,7 +161,7 @@ class CourseRepository
         return $stmt->execute([]);
     }
 
-    public function urlCourseLeaving(string $childId, string $courseCode): array
+    public function urlCourseLeaving(string $childId, string $courseCode): bool
     {
         $query = "SELECT * FROM learn4kids_visited_courses 
                     WHERE child_id = '$childId' AND course_code = '$courseCode' AND time_spent = 0";

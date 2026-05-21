@@ -149,24 +149,22 @@ class AccountController extends Controller
     }
 
     public function sendActivationCodeParent() {
-        $email = $input['email'];
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $email = $this->request['email'];
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $result = $this->service->sendActivationCodeParent($email);
+            $this->success($result);
+        } else {
             $this->error($e->getMessage(), 400);
-            return;
-        }
-
-        $result = $this->service->sendActivationCodeParent($email);
-        $this->success($result);
+        }        
     }
 
     public function resetParentPassword() {
-        $email = $input['email'];
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $email = $this->request['email'];
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $result = $this->service->resetParentPassword($this->request);
+            $this->success($result);
+        } else {
             $this->error($e->getMessage(), 400);
-            return;
         }
-        
-        $result = $this->service->resetParentPassword($this->request);
-        $this->success($result);
     }
 }

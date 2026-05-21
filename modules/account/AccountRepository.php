@@ -287,26 +287,27 @@ class AccountRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function sendActivationCodeParent($email): array
+    public function sendActivationCodeParent($email): bool
     {
         $queryGetParent = "SELECT * FROM learn4kids_parents WHERE email like '$email'";
         $stmt = $this->db->prepare($queryGetParent);
         $stmt->execute([]);
-        $parent = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+        $parent = $stmt->fetchAll(PDO::FETCH_ASSOC)[0]; //print_r($parent);
 
         $code = random_int(100000, 999999);
-        $sql = "UPDATE SET activation_code = '$code', is_active=1 where email like '$email'";
+        $sql = "UPDATE learn4kids_parents SET activation_code = '$code', is_active=1 where email like '$email'";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([]);
+        $resultat = $stmt->execute([]);
 
-        $to = $GLOBALS['USER']['code']; //"tioladuc@gmail.com";
+        $to = $email; //"tioladuc@gmail.com";
         $subject = "Verification Code - " . $this->getApplicationName() ;
-        $message = "Your verification code is: " . $code;
-        $message = "Your parent's code is: " . $parent['parentcode'];
-        $message = "Your login  is: " . $parent['login'];
+        $message = "Here is your code and other parameter to reset your parent account 
+                    <br/><br/><b>Your verification code is:</b> " . $code;
+        $message .= "<br/><br/><b>Your parent's code is:</b> " . $parent['codeparent'];
+        $message .= "<br/><br/><b>Your login  is:</b> " . $parent['login'];
 
         $headers = "From: ". $this->getSenderEmail() ."\r\n";
-        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 
         if(mail($to, $subject, $message, $headers)){
             //echo "Email sent";
@@ -314,17 +315,17 @@ class AccountRepository
             //echo "Email failed";
         }
 
-        return true;
+        return $resultat;
     }
 
-    public function resetParentPassword($input): array
+    public function resetParentPassword($input): bool
     {
         $email = $input['email'];
         $code = $input['code'];
         $password = password_hash($input['new_password'], PASSWORD_BCRYPT);
-        $sql = "UPDATE SET activation_code = null, password = '$password', is_active=1 where email like '$email' AND activation_code = '$code'";
+        $sql = "UPDATE learn4kids_parents SET activation_code = null, password = '$password', is_active=1 where email like '$email' AND activation_code = '$code'";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([]);
+        return $stmt->execute([]);
     }
 
     ////////////////////////////////////////////////////////

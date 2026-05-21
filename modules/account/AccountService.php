@@ -190,12 +190,12 @@ class AccountService
         return $this->repo->loadLevels();
     }
 
-    public function sendActivationCodeParent($email): array
+    public function sendActivationCodeParent($email): bool
     {        
         return $this->repo->sendActivationCodeParent($email);
     }
 
-    public function resetParentPassword($input): array
+    public function resetParentPassword($input): bool
     {
         return $this->repo->resetParentPassword($input);
     }
