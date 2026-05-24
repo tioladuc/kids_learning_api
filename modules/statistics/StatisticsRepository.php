@@ -24,7 +24,9 @@ class StatisticsRepository
             LEFT JOIN learn4kids_courses c
                 ON v.course_code = c.code
             WHERE v.child_id = :child_id 
-                  AND time_spent <> 0 
+                  AND v.time_spent <> 0 
+                  AND (v.is_active IS NULL OR v.is_active = 1)
+                  AND (c.is_active IS NULL OR c.is_active = 1)
             ORDER BY v.last_connection DESC
         ";
 

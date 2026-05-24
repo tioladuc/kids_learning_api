@@ -121,7 +121,7 @@ class AccountService
     public function changePasswordParentChild($input) {
         $data = [
             'name' => $input['name'],
-            'password' => $input['new_password'],
+            'password' => password_hash($input['new_password'], PASSWORD_BCRYPT),
             'passwordraw' => $input['new_password'],
             'level' => $input['level'] ?? '',
             'login' => $input['login'],

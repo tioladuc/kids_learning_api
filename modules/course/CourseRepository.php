@@ -20,7 +20,7 @@ class CourseRepository
                     cc.picked_date
              FROM learn4kids_child_courses cc
              INNER JOIN learn4kids_courses c ON cc.course_code = c.code
-             WHERE cc.child_id = :child_id
+             WHERE cc.child_id = :child_id AND (cc.is_active IS NULL OR cc.is_active = 1)
              AND cc.is_paid = 0"
         );
 
@@ -40,6 +40,7 @@ class CourseRepository
                  SELECT course_code
                  FROM learn4kids_child_courses
                  WHERE child_id = :child_id
+                       AND (is_active IS NULL OR is_active = 1)
              )"
         );
 
@@ -59,6 +60,7 @@ class CourseRepository
                  SELECT course_code
                  FROM learn4kids_child_courses
                  WHERE child_id = :child_id AND is_paid = 1
+                       AND (is_active IS NULL OR is_active = 1)
              )"
         );
         
@@ -74,8 +76,8 @@ class CourseRepository
     {
         $stmt = $this->db->prepare(
             "INSERT INTO learn4kids_child_courses
-             (child_id, course_code, is_paid, picked_date)
-             VALUES (:child_id, :course_code, 0, NOW())"
+             (child_id, course_code, is_paid, picked_date, is_active)
+             VALUES (:child_id, :course_code, 0, NOW(), 1)"
         );
 
         return $stmt->execute([
@@ -92,7 +94,9 @@ class CourseRepository
     {
         $stmt = $this->db->prepare(
             "DELETE FROM learn4kids_child_courses
-             WHERE child_id = :child_id AND course_code = :course_code "
+             WHERE child_id = :child_id 
+                   AND course_code = :course_code 
+                   AND (is_active IS NULL OR is_active = 1)"
         );
 
         return $stmt->execute([
@@ -117,7 +121,8 @@ class CourseRepository
                  SET is_paid = 1,
                      expiry_date = DATE_ADD(NOW(), INTERVAL 30 DAY)
                  WHERE child_id = :child_id
-                 AND course_code = :course_code"
+                 AND course_code = :course_code
+                 AND (is_active IS NULL OR is_active = 1)"
             );
 
             $update->execute([
@@ -155,7 +160,7 @@ class CourseRepository
 
     public function urlCourseEntering(string $childId, string $courseCode): bool
     {
-        $query = "INSERT INTO learn4kids_visited_courses(child_id, course_code, time_spent, last_connection) VALUES('$childId', '$courseCode', 0, now())";
+        $query = "INSERT INTO learn4kids_visited_courses(child_id, course_code, time_spent, last_connection, is_active) VALUES('$childId', '$courseCode', 0, now(), 1)";
     	$stmt = $this->db->prepare($query);
 
         return $stmt->execute([]);
@@ -183,7 +188,7 @@ class CourseRepository
         $totalMinutes = ($interval->days * 24 * 60) + ($interval->h * 60) + $interval->i;
         if($totalMinutes > 500) $totalMinutes = 0;
         $query = "UPDATE learn4kids_visited_courses SET time_spent = $totalMinutes, last_connection = now() 
-                    WHERE child_id = '$childId' AND course_code = '$courseCode' AND time_spent = 0";
+                    WHERE child_id = '$childId' AND course_code = '$courseCode' AND time_spent = 0 AND (is_active IS NULL OR is_active = 1)";
 
         $stmt = $this->db->prepare($query);
         return $stmt->execute([]);

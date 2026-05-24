@@ -10,7 +10,7 @@ class AccountRepository
     }
 
     public function updateSecretCode($id, $isChild) {
-        $query = "update ".($isChild ? "learn4kids_children" : "learn4kids_parents")." set codesecret='". uniqid() ."' where id = '$id'";
+        $query = "update ".($isChild ? "learn4kids_children" : "learn4kids_parents")." set codesecret='". uniqid() ."' where id = '$id' AND (is_active IS NULL OR is_active = 1)";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
     }
@@ -22,6 +22,7 @@ class AccountRepository
     {
         $sql = "SELECT * FROM learn4kids_children c
                 WHERE parent_id = :parent_id
+                    AND (is_active IS NULL OR is_active = 1)
                 ORDER BY created_at DESC";
         
         $stmt = $this->db->prepare($sql);
@@ -40,8 +41,8 @@ class AccountRepository
     public function createParent(array $data): bool
     {
         $sql = "INSERT INTO learn4kids_parents
-                (id, first_name, last_name, login, password, email, is_active, activation_code, codeparent, codesecret)
-                VALUES (:id, :first_name, :last_name, :login, :password, :email, 1, NULL, :codeparent, :codesecret)";
+                (id, first_name, last_name, login, password, email, is_active, activation_code, codeparent, codesecret, is_active)
+                VALUES (:id, :first_name, :last_name, :login, :password, :email, 1, NULL, :codeparent, :codesecret, 1)";
 
         $stmt = $this->db->prepare($sql);
 
@@ -51,7 +52,7 @@ class AccountRepository
     public function findParentByLogin(string $login, string $codeparent)
     {
         $stmt = $this->db->prepare(
-            "SELECT * FROM learn4kids_parents WHERE login = :login and codeparent = :codeparent"
+            "SELECT * FROM learn4kids_parents WHERE login = :login and codeparent = :codeparent AND (is_active IS NULL OR is_active = 1)"
         );
         $stmt->execute(['login' => $login, 'codeparent' => $codeparent]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -60,7 +61,7 @@ class AccountRepository
     public function findChildByLogin(string $login, string $codeparent)
     {
         $stmt = $this->db->prepare(
-            "SELECT * FROM learn4kids_children WHERE login = :login and codeparent = :codeparent"
+            "SELECT * FROM learn4kids_children WHERE login = :login and codeparent = :codeparent AND (is_active IS NULL OR is_active = 1)"
         );
         $stmt->execute(['login' => $login, 'codeparent' => $codeparent]);
 
@@ -92,7 +93,7 @@ class AccountRepository
             FROM learn4kids_children c
             INNER JOIN learn4kids_parents p 
                 ON c.parent_id = p.id
-            WHERE c.id = :id
+            WHERE c.id = :id  AND (c.is_active IS NULL OR c.is_active = 1)
             LIMIT 1"
         );
 
@@ -121,7 +122,7 @@ class AccountRepository
                 codesecret,
                 level
             FROM learn4kids_children
-            WHERE parent_id = :parent_id"
+            WHERE parent_id = :parent_id AND (is_active IS NULL OR is_active = 1)"
         );
 
         $stmt->execute([
@@ -149,7 +150,7 @@ class AccountRepository
                 codeparent,
                 codesecret
             FROM learn4kids_parents
-            WHERE id = :id
+            WHERE id = :id AND (is_active IS NULL OR is_active = 1)
             LIMIT 1"
         );
 
@@ -175,7 +176,7 @@ class AccountRepository
                     login= :login, 
                     codeparent= :codeparent 
                 WHERE 
-                    id = :child_id";
+                    id = :child_id AND (is_active IS NULL OR is_active = 1)";
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute($data);
@@ -188,7 +189,7 @@ class AccountRepository
                     last_name = :last_name, 
                     password = :new_password
                 WHERE 
-                    id = :parent_id";
+                    id = :parent_id AND (is_active IS NULL OR is_active = 1)";
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute($data);
@@ -197,8 +198,8 @@ class AccountRepository
     public function addChild(array $data): bool
     {
         $sql = "INSERT INTO learn4kids_children
-                (id, parent_id, name, login, password, passwordraw, parent_responsible, codeparent, level)
-                VALUES (:id, :parent_id, :name, :login, :password, :passwordraw, :parent_responsible, :codeparent, :level)";
+                (id, parent_id, name, login, password, passwordraw, parent_responsible, codeparent, level, is_active)
+                VALUES (:id, :parent_id, :name, :login, :password, :passwordraw, :parent_responsible, :codeparent, :level, 1)";
 
         $stmt = $this->db->prepare($sql);
 
@@ -207,11 +208,18 @@ class AccountRepository
 
     public function deleteChild(string $childId, string $parentId): bool
     {
+        $query = "UPDATE learn4kids_visited_courses SET is_active = 0 WHERE child_id = '$childId'";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([]);
+
+        $query = "UPDATE learn4kids_child_courses SET is_active = 0 WHERE child_id = '$childId'";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([]);
+
         $stmt = $this->db->prepare(
-            "DELETE FROM learn4kids_children
+            "UPDATE learn4kids_children set is_active = 0
              WHERE id = :id AND parent_id = :parent_id"
         );
-
         return $stmt->execute([
             'id' => $childId,
             'parent_id' => $parentId
@@ -342,7 +350,7 @@ class AccountRepository
         $email = $input['email'];
         $code = $input['code'];
         $password = password_hash($input['new_password'], PASSWORD_BCRYPT);
-        $sql = "UPDATE learn4kids_parents SET activation_code = null, password = '$password', is_active=1 where email like '$email' AND activation_code = '$code'";
+        $sql = "UPDATE learn4kids_parents SET activation_code = null, password = '$password', is_active=1 WHERE email LIKE '$email' AND activation_code = '$code' AND (is_active IS NULL OR is_active = 1)";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([]);
     }
