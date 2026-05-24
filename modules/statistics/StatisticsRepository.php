@@ -26,7 +26,6 @@ class StatisticsRepository
             WHERE v.child_id = :child_id 
                   AND v.time_spent <> 0 
                   AND (v.is_active IS NULL OR v.is_active = 1)
-                  AND (c.is_active IS NULL OR c.is_active = 1)
             ORDER BY v.last_connection DESC
         ";
 
