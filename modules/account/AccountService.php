@@ -123,17 +123,30 @@ class AccountService
             'name' => $input['name'],
             'password' => $input['new_password'],
             'passwordraw' => $input['new_password'],
-            'child_id' => $input['child_id'],
-            'parent_id' => $input['parent_id'],
-            'level' => $input['level'] ?? 0,
+            'level' => $input['level'] ?? '',
             'login' => $input['login'],
             'codeparent' => $input['codeparent'],
+            'child_id' => $input['child_id']
         ];
 
         $this->repo->changePasswordParentChild($data);
 
         return [
             "message" => "Child update successfully",
+        ];
+    }
+    public function changeParentPassword($input) {
+        $data = [
+            'first_name' => $input['first_name'],
+            'last_name' => $input['last_name'],
+            'new_password' => password_hash($input['new_password'], PASSWORD_BCRYPT),
+            'parent_id' => $input['parent_id'] ?? '',
+        ];
+
+        $this->repo->changeParentPassword($data);
+
+        return [
+            "message" => "Parent update successfully",
         ];
     }
     // ============================================

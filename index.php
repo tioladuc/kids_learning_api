@@ -34,6 +34,7 @@ $router->post('/account/parentLoadChildren', 'AccountController@parentLoadChildr
 $router->post('/account/loadPayment', 'AccountController@loadPayment');
 $router->post('/account/levels', 'AccountController@loadLevels');
 $router->post('/account/changePasswordParentChild', 'AccountController@changePasswordParentChild');
+$router->post('/account/changeParentPassword', 'AccountController@changeParentPassword');
 
 $router->post('/account/sendActivationCodeParent', 'AccountController@sendActivationCodeParent');
 $router->post('/account/resetParentPassword', 'AccountController@resetParentPassword');

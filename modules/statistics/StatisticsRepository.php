@@ -23,7 +23,8 @@ class StatisticsRepository
             FROM learn4kids_visited_courses v
             LEFT JOIN learn4kids_courses c
                 ON v.course_code = c.code
-            WHERE v.child_id = :child_id
+            WHERE v.child_id = :child_id 
+                  AND time_spent <> 0 
             ORDER BY v.last_connection DESC
         ";
 

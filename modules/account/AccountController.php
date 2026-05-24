@@ -85,6 +85,16 @@ class AccountController extends Controller
         }
     }
 
+    public function changeParentPassword() {
+        try {
+            $result = $this->service->changeParentPassword($this->request);
+
+            $this->success($result);
+        } catch (Exception $e) {
+            $this->error($e->getMessage(), 400);
+        }
+    }
+
     // ============================================
     // ADD CHILD (Protected)
     // ============================================
