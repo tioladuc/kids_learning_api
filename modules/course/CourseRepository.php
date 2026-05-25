@@ -52,10 +52,19 @@ class CourseRepository
     // AVAILABLE COURSES (not yet picked)
     // ============================================
 
-    public function getAvailableCourses(string $childId): array
+    public function getAvailableCourses(string $childId, $user): array
     {
+        $iduser = $user['user_id'];
         $stmt = $this->db->prepare(
-            "SELECT * FROM learn4kids_courses
+            "SELECT 
+                code, 
+                name, 
+                amount, 
+                validity, 
+                description, 
+                case when url is null or ltrim(url)='' then null else concat(trim(url), IF(LOCATE('?',url)=0, '?', '&'), 'child_id=$iduser') end as url, 
+                level 
+             FROM learn4kids_courses
              WHERE code IN (
                  SELECT course_code
                  FROM learn4kids_child_courses

@@ -19,9 +19,9 @@ class CourseService
         return $this->repo->getChildPickCourses($childId);
     }
 
-    public function loadAvailableCourses(string $childId): array
+    public function loadAvailableCourses(string $childId, $user): array
     {
-        return $this->repo->getAvailableCourses($childId);
+        return $this->repo->getAvailableCourses($childId, $user);
     }
 
     public function pickCourse(string $childId, string $courseCode): array

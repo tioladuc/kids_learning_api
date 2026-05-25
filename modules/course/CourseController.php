@@ -42,7 +42,7 @@ class CourseController extends Controller
         $user = AuthMiddleware::handle();
         $childId = $this->request['child_id'];
 
-        $courses = $this->service->loadAvailableCourses($childId);
+        $courses = $this->service->loadAvailableCourses($childId, $user);
         $this->success($courses);
     }
 
